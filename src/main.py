@@ -2,16 +2,15 @@
 Main application file for LangChain Agent
 """
 import os
+import logging
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from langchain_openai import ChatOpenAI
-from langchain.agents import AgentExecutor, create_openai_tools_agent
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
-from langchain.memory import ConversationBufferMemory
 
-from src.tools.tool_registry import get_all_tools
 from src.schemas.agent_schema import AgentRequest, AgentResponse
+from src.services.agent_service import MultiAgentService
 from src.services.langsmith_service import init_langsmith
 from src.logging_config import setup_logging
 
@@ -21,13 +20,41 @@ load_dotenv()
 # Setup logging
 logger = setup_logging()
 
-# Initialize LangSmith
-init_langsmith()
+# Validate required env vars at startup
+_REQUIRED_ENV_VARS = ["OPENAI_API_KEY", "SERPAPI_KEY"]
+
+
+def _validate_env() -> None:
+    missing = [v for v in _REQUIRED_ENV_VARS if not os.getenv(v)]
+    if missing:
+        raise RuntimeError(
+            f"Missing required environment variables: {', '.join(missing)}"
+        )
+
+
+# Holds the singleton service instance
+_agent_service: MultiAgentService | None = None
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Startup / shutdown lifecycle."""
+    global _agent_service
+    _validate_env()
+    init_langsmith()
+    _agent_service = MultiAgentService()
+    logger.info("MultiAgentService initialized")
+    yield
+    _agent_service = None
+
 
 # Initialize FastAPI app
-app = FastAPI(title="LangChain Agent API", 
-              description="API for interacting with custom LangChain agent",
-              version="0.1.0")
+app = FastAPI(
+    title="LangChain Agent API",
+    description="API for interacting with custom LangChain agent",
+    version="0.1.0",
+    lifespan=lifespan,
+)
 
 # Configure CORS
 app.add_middleware(
@@ -38,42 +65,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Create agent instance
-def get_agent():
-    # Get all tools from registry
-    tools = get_all_tools()
-    
-    # Initialize LLM
-    llm = ChatOpenAI(model="gpt-4o", temperature=0)
-    
-    # Initialize memory
-    memory = ConversationBufferMemory(return_messages=True, memory_key="chat_history")
-    
-    # Create prompt
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", "You are an intelligent assistant that uses tools to help users. "
-                  "Be concise but helpful in your responses."),
-        MessagesPlaceholder(variable_name="chat_history"),
-        ("human", "{input}"),
-        MessagesPlaceholder(variable_name="agent_scratchpad"),
-    ])
-    
-    # Create agent
-    agent = create_openai_tools_agent(llm, tools, prompt)
-    
-    # Create agent executor
-    agent_executor = AgentExecutor(
-        agent=agent,
-        tools=tools,
-        memory=memory,
-        verbose=True,
-        return_intermediate_steps=True
-    )
-    
-    return agent_executor
-
-# Initialize the agent
-agent_executor = get_agent()
 
 @app.post("/api/agent", response_model=AgentResponse)
 async def run_agent(request: AgentRequest):
@@ -81,19 +72,14 @@ async def run_agent(request: AgentRequest):
     Run the agent with the given input query
     """
     try:
-        # Process the input with the agent
-        response = agent_executor.invoke({"input": request.query})
-        
-        # Return response
-        return AgentResponse(
-            answer=response["output"],
-            steps=[step[0].tool + ": " + str(step[0].tool_input) for step in response["intermediate_steps"]]
-        )
+        assert _agent_service is not None, "Service not initialized"
+        return await _agent_service.process_query(request.query)
     except Exception as e:
         logger.error(f"Error running agent: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @app.get("/health")
 async def health_check():
     """Check if the API is running"""
-    return {"status": "ok"} 
+    return {"status": "ok"}

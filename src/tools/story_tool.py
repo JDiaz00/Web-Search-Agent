@@ -32,17 +32,62 @@ class StoryTool(BaseTool):
         """
         try:
             logger.info(f"Generating story with elements: {elements}")
-            
-            # This tool doesn't actually perform complex processing itself.
-            # The LLM will generate the story elements based on the prompt.
-            # This method is mainly for logging and structure.
-            
-            return f"Story elements for: {elements}\n\nThe LLM will generate a title, character list, page count, and summary based on these elements."
-            
+
+            # Parse elements and provide structured story building blocks
+            elements_lower = elements.lower()
+
+            # Detect genre
+            genre_keywords = {
+                "fantasy": ["fantasy", "magic", "dragon", "wizard", "elf", "kingdom"],
+                "sci-fi": ["sci-fi", "science fiction", "space", "future", "robot", "alien", "cyberpunk"],
+                "mystery": ["mystery", "detective", "crime", "murder", "clue", "investigation"],
+                "romance": ["romance", "love", "relationship", "heart"],
+                "horror": ["horror", "scary", "ghost", "haunted", "dark", "terror"],
+                "adventure": ["adventure", "quest", "journey", "explore", "treasure"],
+                "thriller": ["thriller", "suspense", "chase", "spy", "conspiracy"],
+            }
+
+            detected_genre = "general fiction"
+            for genre, keywords in genre_keywords.items():
+                if any(kw in elements_lower for kw in keywords):
+                    detected_genre = genre
+                    break
+
+            # Detect setting
+            setting_keywords = {
+                "urban": ["city", "urban", "metropolis", "downtown"],
+                "rural": ["village", "farm", "countryside", "rural"],
+                "futuristic": ["future", "futuristic", "cyberpunk", "space station"],
+                "medieval": ["medieval", "castle", "kingdom", "knight"],
+                "contemporary": ["modern", "present", "today", "contemporary"],
+            }
+
+            detected_setting = "unspecified"
+            for setting, keywords in setting_keywords.items():
+                if any(kw in elements_lower for kw in keywords):
+                    detected_setting = setting
+                    break
+
+            # Build structured output
+            result = f"""STORY ELEMENTS ANALYSIS
+Genre: {detected_genre}
+Setting: {detected_setting}
+User Input: {elements}
+
+SUGGESTED STRUCTURE:
+- Develop 2-4 main characters that fit the {detected_genre} genre
+- Create a central conflict appropriate for a {detected_setting} setting
+- Include a clear three-act structure (setup, confrontation, resolution)
+- Weave the user's requested elements throughout the narrative
+
+Use these elements to generate a complete story concept with title, characters, page count, and summary."""
+
+            return result
+
         except Exception as e:
             logger.error(f"Error generating story: {str(e)}")
             return f"Error generating story: {str(e)}"
-    
+
     async def _arun(self, elements: str) -> str:
-        """Async implementation of the story generation tool."""
-        return self._run(elements) 
+        """Async implementation - not supported."""
+        raise NotImplementedError("StoryTool does not support async execution.") 

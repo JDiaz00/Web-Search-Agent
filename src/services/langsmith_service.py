@@ -18,7 +18,7 @@ def init_langsmith():
         return False
     
     # Configure LangSmith project
-    project_name = "clases_ia"
+    project_name = os.getenv("LANGCHAIN_PROJECT", "clases_ia")
     tracing_v2 = os.getenv("LANGCHAIN_TRACING_V2", "true").lower() == "true"
     endpoint = os.getenv("LANGCHAIN_ENDPOINT", "https://api.smith.langchain.com")
     

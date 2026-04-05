@@ -1,103 +1,112 @@
+import asyncio
 import gradio as gr
 import os
 from dotenv import load_dotenv
 
-# Importar el agente directamente
-from src.main import agent_executor
+from src.services.agent_service import MultiAgentService
 
-# Cargar variables de entorno
 load_dotenv()
 
-def process_query(query, agent_type="auto-detect"):
-    """
-    Enviar la consulta al agente y devolver la respuesta
-    """
-    try:
-        # Usar directamente el agente en lugar de llamar a la API
-        response = agent_executor.invoke({"input": query})
-        
-        # Formatear la respuesta según el formato especificado
-        result = {
-            "answer": response["output"],
-            "steps": [step[0].tool + ": " + str(step[0].tool_input) for step in response["intermediate_steps"]]
-        }
-        
-        # Construir una respuesta bien formateada en Markdown
-        steps_md = "\n".join([f"- **{step}**" for step in result.get("steps", [])])
-        
-        markdown_response = f"""
-### Respuesta
-{result['answer']}
+MAX_QUERY_LENGTH = 2000
 
-### Pasos ejecutados
+# Initialize the multi-agent service
+service = MultiAgentService()
+
+
+def process_query(query: str, agent_type: str = "auto-detect") -> str:
+    """
+    Send the query to the multi-agent service and return the response.
+    """
+    # Input validation
+    if not query or not query.strip():
+        return "### Error\nPlease enter a query."
+
+    query = query.strip()
+    if len(query) > MAX_QUERY_LENGTH:
+        return f"### Error\nQuery is too long ({len(query)} characters). Maximum allowed is {MAX_QUERY_LENGTH} characters."
+
+    try:
+        # Run the async service method in a sync context
+        loop = asyncio.new_event_loop()
+        try:
+            response = loop.run_until_complete(service.process_query(query))
+        finally:
+            loop.close()
+
+        # Build formatted markdown response
+        steps_md = ""
+        if response.steps:
+            steps_md = "\n".join([f"- **{step}**" for step in response.steps])
+
+        markdown_response = f"""### Answer
+{response.answer}
+"""
+        if steps_md:
+            markdown_response += f"""
+### Steps Executed
 {steps_md}
 """
         return markdown_response
-    except Exception as e:
-        return f"### Error\nHa ocurrido un error al procesar la consulta: {str(e)}"
 
-# Crear la interfaz de Gradio con diseño mejorado
-with gr.Blocks(title="Agente LangChain", theme=gr.themes.Soft()) as demo:
+    except Exception as e:
+        return f"### Error\nFailed to process query: {str(e)}"
+
+
+# Create the Gradio interface
+with gr.Blocks(title="LangChain Multi-Agent", theme=gr.themes.Soft()) as demo:
     gr.Markdown(
         """
-        # 🤖 Agente LangChain con Gradio
-        
-        Este agente inteligente puede:
-        - 🧮 **Realizar cálculos matemáticos** con precisión
-        - 🔍 **Buscar información** en distintas fuentes
-        - 📚 **Generar historias** creativas basadas en tus ideas
-        
-        Simplemente escribe tu consulta y el agente elegirá la herramienta más adecuada.
+        # LangChain Multi-Agent with Gradio
+
+        This intelligent agent can:
+        - **Perform mathematical calculations** with precision
+        - **Search for information** across various sources
+        - **Generate creative stories** based on your ideas
+
+        Simply type your query and the agent will choose the most appropriate tool.
         """
     )
-    
+
     with gr.Row():
         with gr.Column(scale=3):
             query_input = gr.Textbox(
-                label="Tu consulta",
-                placeholder="Pregunta algo al agente...",
-                lines=3
+                label="Your query",
+                placeholder="Ask the agent something...",
+                lines=3,
+                max_lines=10,
             )
             agent_selector = gr.Dropdown(
                 choices=["auto-detect", "calculator", "search", "story"],
                 value="auto-detect",
-                label="Tipo de agente (opcional)"
+                label="Agent type (optional)",
             )
-            submit_btn = gr.Button("Enviar consulta", variant="primary")
-        
+            submit_btn = gr.Button("Submit query", variant="primary")
+
         with gr.Column(scale=5):
-            output = gr.Markdown(label="Respuesta del agente")
-    
-    # Configurar la acción del botón
+            output = gr.Markdown(label="Agent response")
+
     submit_btn.click(
         fn=process_query,
         inputs=[query_input, agent_selector],
-        outputs=output
+        outputs=output,
     )
-    
-    # También permitir enviar con Enter
+
     query_input.submit(
         fn=process_query,
         inputs=[query_input, agent_selector],
-        outputs=output
-    )
-    
-    # Añadir ejemplos
-    gr.Examples(
-        examples=[
-            ["¿Cuánto es 125 × 48?", "calculator"],
-            ["¿Cuáles son los lugares turísticos más importantes de Perú?", "search"],
-            ["Cuéntame una historia sobre un detective en una ciudad futurista", "story"],
-            ["¿Cuál es la altura del Monte Everest?", "auto-detect"]
-        ],
-        inputs=[query_input, agent_selector]
+        outputs=output,
     )
 
-# Iniciar la aplicación de Gradio
+    gr.Examples(
+        examples=[
+            ["What is 125 x 48?", "calculator"],
+            ["What are the most important tourist spots in Peru?", "search"],
+            ["Tell me a story about a detective in a futuristic city", "story"],
+            ["What is the height of Mount Everest?", "auto-detect"],
+        ],
+        inputs=[query_input, agent_selector],
+    )
+
 if __name__ == "__main__":
-    # Información de ayuda
-    print("La aplicación Gradio se está ejecutando.")
-    print("No es necesario ejecutar el servidor FastAPI por separado.")
-    
-    # Iniciar Gradio
-    demo.launch() 
+    print("Gradio app is running.")
+    demo.launch()

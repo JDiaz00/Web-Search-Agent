@@ -2,13 +2,21 @@
 Schemas for agent requests and responses
 """
 from typing import List, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 class AgentRequest(BaseModel):
     """
     Request model for agent API
     """
-    query: str = Field(..., description="The user query to process with the agent")
+    query: str = Field(..., description="The user query to process with the agent", max_length=2000)
+    session_id: Optional[str] = Field(None, description="Optional session ID for tracking conversations")
+
+    @field_validator("query")
+    @classmethod
+    def query_must_not_be_blank(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("Query must not be blank")
+        return v.strip()
 
 class AgentResponse(BaseModel):
     """
