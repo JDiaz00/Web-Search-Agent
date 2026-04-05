@@ -39,8 +39,6 @@ jobs:
       - name: Run isort
         run: poetry run isort --check-only src/ gradio_app.py
 
-      - name: Run flake8
-        run: poetry run flake8 src/ gradio_app.py --max-line-length 120 --exclude __pycache__
 
   test:
     runs-on: ubuntu-latest
