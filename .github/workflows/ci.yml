@@ -31,7 +31,7 @@ jobs:
         run: pip install poetry
 
       - name: Install dependencies
-        run: poetry install --with dev
+        run: poetry install --with dev --no-root
 
       - name: Run black
         run: poetry run black --check src/ gradio_app.py
