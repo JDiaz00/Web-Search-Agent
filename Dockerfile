@@ -1,7 +1,7 @@
 # Stage 1: Build dependencies
 FROM python:3.11-slim AS builder
 
-RUN pip install --no-cache-dir poetry==1.7.1
+RUN pip install --no-cache-dir poetry==1.8.5
 
 WORKDIR /app
 

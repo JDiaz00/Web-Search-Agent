@@ -3,29 +3,31 @@ Calculator tool for performing basic arithmetic operations.
 
 Uses an AST-based expression evaluator instead of eval() for safety.
 """
+
 import ast
-import math
 import logging
+import math
 import operator
 from typing import Type
-from pydantic import BaseModel, Field
+
 from langchain.tools import BaseTool
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger("langchain_agent")
 
 # Allowed math constants and functions
 _MATH_CONSTANTS = {
-    'pi': math.pi,
-    'e': math.e,
+    "pi": math.pi,
+    "e": math.e,
 }
 
 _MATH_FUNCTIONS = {
-    'sin': math.sin,
-    'cos': math.cos,
-    'tan': math.tan,
-    'sqrt': math.sqrt,
-    'log': math.log,
-    'abs': abs,
+    "sin": math.sin,
+    "cos": math.cos,
+    "tan": math.tan,
+    "sqrt": math.sqrt,
+    "log": math.log,
+    "abs": abs,
 }
 
 # Allowed binary operators
@@ -91,6 +93,7 @@ def _safe_eval(node: ast.AST) -> float:
 
 class CalculatorInput(BaseModel):
     """Input for the calculator tool."""
+
     expression: str = Field(
         description="A mathematical expression to evaluate. Can include numbers, "
         "operators (+, -, *, /, **, %, ^), parentheses, and functions "
@@ -100,6 +103,7 @@ class CalculatorInput(BaseModel):
 
 class CalculatorTool(BaseTool):
     """Tool for performing basic arithmetic calculations."""
+
     name: str = "calculator"
     description: str = (
         "Useful for performing mathematical calculations. Input should be a "
@@ -119,9 +123,9 @@ class CalculatorTool(BaseTool):
         """
         try:
             # Replace ^ with ** for exponentiation
-            expr = expression.replace('^', '**')
+            expr = expression.replace("^", "**")
 
-            tree = ast.parse(expr, mode='eval')
+            tree = ast.parse(expr, mode="eval")
             result = _safe_eval(tree)
             result_str = str(result)
 
@@ -134,4 +138,4 @@ class CalculatorTool(BaseTool):
 
     async def _arun(self, expression: str) -> str:
         """Async implementation of the calculator tool."""
-        return self._run(expression) 
+        return self._run(expression)

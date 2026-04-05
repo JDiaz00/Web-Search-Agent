@@ -54,10 +54,12 @@ class SearchTool(BaseTool):
 
             client = Client(api_key=self._get_api_key())
 
-            results = client.search({
-                "engine": "google",
-                "q": query,
-            })
+            results = client.search(
+                {
+                    "engine": "google",
+                    "q": query,
+                }
+            )
             logger.info(f"Results: {results}")
 
             if isinstance(results, dict) and "error" in results:
@@ -65,10 +67,12 @@ class SearchTool(BaseTool):
 
             if "organic_results" in results and results["organic_results"]:
                 organic = results["organic_results"][:5]
-                return "\n".join([
-                    f"{result.get('title', 'No title')} - {result.get('link', '')}\n{result.get('snippet', '')}"
-                    for result in organic
-                ])
+                return "\n".join(
+                    [
+                        f"{result.get('title', 'No title')} - {result.get('link', '')}\n{result.get('snippet', '')}"
+                        for result in organic
+                    ]
+                )
 
             return "No search results found for this query."
 
@@ -90,4 +94,4 @@ class SearchTool(BaseTool):
         Raises:
             NotImplementedError: Always, as async execution is not supported.
         """
-        raise NotImplementedError("SearchTool does not support async execution.") 
+        raise NotImplementedError("SearchTool does not support async execution.")

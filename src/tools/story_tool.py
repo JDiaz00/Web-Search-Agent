@@ -1,32 +1,38 @@
 """
 Tool for generating story elements based on user input
 """
+
 import logging
 from typing import Type
-from pydantic import BaseModel, Field
+
 from langchain.tools import BaseTool
+from pydantic import BaseModel, Field
 
 logger = logging.getLogger("langchain_agent")
 
+
 class StoryInput(BaseModel):
     """Input for the story generation tool."""
+
     elements: str = Field(
         description="Elements of the story to incorporate (characters, setting, theme, genre, etc.)"
     )
 
+
 class StoryTool(BaseTool):
     """Tool for generating story elements based on user input."""
+
     name = "story_generator"
     description = "Generates story elements such as title, characters, and summary based on user input. Use this when you need to create or develop story ideas."
     args_schema: Type[BaseModel] = StoryInput
-    
+
     def _run(self, elements: str) -> str:
         """
         Generate story elements based on user input
-        
+
         Args:
             elements: Elements to incorporate into the story
-            
+
         Returns:
             str: Generated story elements in a structured format
         """
@@ -39,8 +45,23 @@ class StoryTool(BaseTool):
             # Detect genre
             genre_keywords = {
                 "fantasy": ["fantasy", "magic", "dragon", "wizard", "elf", "kingdom"],
-                "sci-fi": ["sci-fi", "science fiction", "space", "future", "robot", "alien", "cyberpunk"],
-                "mystery": ["mystery", "detective", "crime", "murder", "clue", "investigation"],
+                "sci-fi": [
+                    "sci-fi",
+                    "science fiction",
+                    "space",
+                    "future",
+                    "robot",
+                    "alien",
+                    "cyberpunk",
+                ],
+                "mystery": [
+                    "mystery",
+                    "detective",
+                    "crime",
+                    "murder",
+                    "clue",
+                    "investigation",
+                ],
                 "romance": ["romance", "love", "relationship", "heart"],
                 "horror": ["horror", "scary", "ghost", "haunted", "dark", "terror"],
                 "adventure": ["adventure", "quest", "journey", "explore", "treasure"],
@@ -90,4 +111,4 @@ Use these elements to generate a complete story concept with title, characters, 
 
     async def _arun(self, elements: str) -> str:
         """Async implementation - not supported."""
-        raise NotImplementedError("StoryTool does not support async execution.") 
+        raise NotImplementedError("StoryTool does not support async execution.")

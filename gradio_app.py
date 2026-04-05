@@ -1,6 +1,7 @@
 import asyncio
-import gradio as gr
 import os
+
+import gradio as gr
 from dotenv import load_dotenv
 
 from src.services.agent_service import MultiAgentService
@@ -54,8 +55,7 @@ def process_query(query: str, agent_type: str = "auto-detect") -> str:
 
 # Create the Gradio interface
 with gr.Blocks(title="LangChain Multi-Agent", theme=gr.themes.Soft()) as demo:
-    gr.Markdown(
-        """
+    gr.Markdown("""
         # LangChain Multi-Agent with Gradio
 
         This intelligent agent can:
@@ -64,8 +64,7 @@ with gr.Blocks(title="LangChain Multi-Agent", theme=gr.themes.Soft()) as demo:
         - **Generate creative stories** based on your ideas
 
         Simply type your query and the agent will choose the most appropriate tool.
-        """
-    )
+        """)
 
     with gr.Row():
         with gr.Column(scale=3):

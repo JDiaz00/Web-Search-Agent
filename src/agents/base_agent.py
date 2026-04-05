@@ -1,15 +1,18 @@
 """
 Base agent class that all specialized agents will inherit from
 """
+
 import logging
-from typing import Dict, Any
-from langchain_openai import ChatOpenAI
+from typing import Any, Dict
+
 from langchain.agents import AgentExecutor, create_openai_tools_agent
-from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.memory import ConversationBufferWindowMemory
+from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain.tools import BaseTool
+from langchain_openai import ChatOpenAI
 
 logger = logging.getLogger("langchain_agent")
+
 
 class BaseAgent:
     """
@@ -46,12 +49,14 @@ class BaseAgent:
         )
 
         # Create prompt
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", self.system_prompt),
-            MessagesPlaceholder(variable_name="chat_history"),
-            ("human", "{input}"),
-            MessagesPlaceholder(variable_name="agent_scratchpad"),
-        ])
+        prompt = ChatPromptTemplate.from_messages(
+            [
+                ("system", self.system_prompt),
+                MessagesPlaceholder(variable_name="chat_history"),
+                ("human", "{input}"),
+                MessagesPlaceholder(variable_name="agent_scratchpad"),
+            ]
+        )
 
         # Create agent
         agent = create_openai_tools_agent(llm, self.tools, prompt)
@@ -62,7 +67,7 @@ class BaseAgent:
             tools=self.tools,
             memory=memory,
             verbose=True,
-            return_intermediate_steps=True
+            return_intermediate_steps=True,
         )
 
         return agent_executor

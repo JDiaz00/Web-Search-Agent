@@ -1,18 +1,19 @@
 """
 Main application file for LangChain Agent
 """
-import os
+
 import logging
+import os
 from contextlib import asynccontextmanager
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from dotenv import load_dotenv
 
+from src.logging_config import setup_logging
 from src.schemas.agent_schema import AgentRequest, AgentResponse
 from src.services.agent_service import MultiAgentService
 from src.services.langsmith_service import init_langsmith
-from src.logging_config import setup_logging
 
 # Load environment variables
 load_dotenv()

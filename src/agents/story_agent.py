@@ -1,22 +1,25 @@
 """
 Specialized agent for story generation queries
 """
+
 import logging
-from src.tools.story_tool import StoryTool
+
 from src.agents.base_agent import BaseAgent
+from src.tools.story_tool import StoryTool
 
 logger = logging.getLogger("langchain_agent")
+
 
 class StoryAgent(BaseAgent):
     """
     Specialized agent for handling story generation requests
     """
-    
+
     def __init__(self):
         """Initialize the story generation agent"""
         # Create the story tool
         tool = StoryTool()
-        
+
         # Define system prompt for the agent
         system_prompt = """You are a creative writing assistant specialized in story development.
 
@@ -40,7 +43,7 @@ SUMMARY:
 Be creative and engaging. Incorporate the user's requested elements seamlessly into your story concept.
 For fantasy elements, create rich, imaginative worlds. For realistic elements, focus on deep character development.
 """
-        
+
         # Initialize the base agent
         super().__init__(tools=[tool], system_prompt=system_prompt)
-        logger.info("Story agent initialized") 
+        logger.info("Story agent initialized")
