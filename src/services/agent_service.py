@@ -53,9 +53,7 @@ class MultiAgentService:
         # Create fallback general agent
         self.general_agent = GeneralAgent(self.tools)
 
-        logger.info(
-            f"Multi-agent service initialized with {len(self.specialized_agents)} specialized agents"
-        )
+        logger.info(f"Multi-agent service initialized with {len(self.specialized_agents)} specialized agents")
 
     async def process_query(self, query: str) -> AgentResponse:
         """
@@ -111,11 +109,7 @@ class MultiAgentService:
 
             # Create response
             return AgentResponse(
-                answer=(
-                    response.get("output", str(response))
-                    if isinstance(response, dict)
-                    else str(response)
-                ),
+                answer=(response.get("output", str(response)) if isinstance(response, dict) else str(response)),
                 steps=steps,
             )
 

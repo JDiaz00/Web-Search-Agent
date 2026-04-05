@@ -24,7 +24,9 @@ def process_query(query: str, agent_type: str = "auto-detect") -> str:
 
     query = query.strip()
     if len(query) > MAX_QUERY_LENGTH:
-        return f"### Error\nQuery is too long ({len(query)} characters). Maximum allowed is {MAX_QUERY_LENGTH} characters."
+        return (
+            f"### Error\nQuery is too long ({len(query)} characters). Maximum allowed is {MAX_QUERY_LENGTH} characters."
+        )
 
     try:
         # Run the async service method in a sync context

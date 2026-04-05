@@ -106,8 +106,7 @@ class CalculatorTool(BaseTool):
 
     name: str = "calculator"
     description: str = (
-        "Useful for performing mathematical calculations. Input should be a "
-        "valid mathematical expression."
+        "Useful for performing mathematical calculations. Input should be a " "valid mathematical expression."
     )
     args_schema: Type[BaseModel] = CalculatorInput
 

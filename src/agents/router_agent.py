@@ -23,9 +23,7 @@ class RouterAgent:
         self.llm = ChatOpenAI(model="gpt-4o", temperature=0)
         self.valid_tool_names = [tool.name for tool in self.tools]
 
-        tool_descriptions = "\n".join(
-            [f"- {tool.name}: {tool.description}" for tool in self.tools]
-        )
+        tool_descriptions = "\n".join([f"- {tool.name}: {tool.description}" for tool in self.tools])
         self.prompt = ChatPromptTemplate.from_messages(
             [
                 (

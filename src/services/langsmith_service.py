@@ -17,9 +17,7 @@ def init_langsmith():
     # Check if LangSmith API key is set
     langchain_api_key = os.getenv("LANGCHAIN_API_KEY")
     if not langchain_api_key:
-        logger.warning(
-            "LANGCHAIN_API_KEY not set. LangSmith tracing will not be available."
-        )
+        logger.warning("LANGCHAIN_API_KEY not set. LangSmith tracing will not be available.")
         return False
 
     # Configure LangSmith project

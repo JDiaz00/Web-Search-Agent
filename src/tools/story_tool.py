@@ -14,9 +14,7 @@ logger = logging.getLogger("langchain_agent")
 class StoryInput(BaseModel):
     """Input for the story generation tool."""
 
-    elements: str = Field(
-        description="Elements of the story to incorporate (characters, setting, theme, genre, etc.)"
-    )
+    elements: str = Field(description="Elements of the story to incorporate (characters, setting, theme, genre, etc.)")
 
 
 class StoryTool(BaseTool):

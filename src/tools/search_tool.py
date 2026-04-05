@@ -34,10 +34,7 @@ class SearchTool(BaseTool):
         """
         api_key = os.environ.get("SERPAPI_KEY")
         if not api_key:
-            raise ValueError(
-                "SERPAPI_KEY environment variable is not set. "
-                "Please set it to a valid SerpAPI key."
-            )
+            raise ValueError("SERPAPI_KEY environment variable is not set. " "Please set it to a valid SerpAPI key.")
         return api_key
 
     def _run(self, query: str) -> str:

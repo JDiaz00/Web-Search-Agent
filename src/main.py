@@ -28,9 +28,7 @@ _REQUIRED_ENV_VARS = ["OPENAI_API_KEY", "SERPAPI_KEY"]
 def _validate_env() -> None:
     missing = [v for v in _REQUIRED_ENV_VARS if not os.getenv(v)]
     if missing:
-        raise RuntimeError(
-            f"Missing required environment variables: {', '.join(missing)}"
-        )
+        raise RuntimeError(f"Missing required environment variables: {', '.join(missing)}")
 
 
 # Holds the singleton service instance
