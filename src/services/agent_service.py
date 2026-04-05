@@ -5,13 +5,7 @@ Multi-agent service for processing queries using specialized agents
 import logging
 from typing import Any, Dict, List, Optional
 
-from src.agents import (
-    CalculatorAgent,
-    GeneralAgent,
-    RouterAgent,
-    SearchAgent,
-    StoryAgent,
-)
+from src.agents import CalculatorAgent, GeneralAgent, RouterAgent, SearchAgent, StoryAgent
 from src.schemas.agent_schema import AgentResponse
 from src.tools.tool_registry import get_all_tools
 
